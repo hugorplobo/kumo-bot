@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use log::error;
 
 use crate::DbPool;
@@ -68,7 +66,25 @@ impl Database {
         }
     }
 
-    pub fn get_all(&self, _user_id: &str) -> Result<HashMap<String, File>, ()> {
-        todo!()
+    pub async fn get_all(&self, user_id: &str) -> Result<Vec<File>, ()> {
+        let conn = self.pool.get().await.unwrap();
+
+        match conn.query(
+            "select * from file f join file_user fu on f.id = fu.id_file where id_user = $1::TEXT",
+            &[&user_id]
+        ).await {
+            Ok(rows) => {
+                let files: Vec<_> = rows.iter().map(|row| {
+                    let file = File::new(row.get("id"), row.get("name"));
+                    return file;
+                }).collect();
+
+                return Ok(files);
+            },
+            Err(err) => {
+                error!("Failed to get files: {err}");
+                return Err(());
+            }
+        }
     }
 }
