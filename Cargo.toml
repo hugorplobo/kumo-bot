@@ -6,7 +6,11 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+bb8 = "0.8.0"
+bb8-postgres = "0.8.1"
 dotenvy = "0.15.6"
+env_logger = "0.10.0"
 frankenstein = { version = "0.21.0", features = ["async-http-client"] }
+log = "0.4.17"
 tokio = { version = "1.23.0", features = ["macros", "rt-multi-thread"] }
 
