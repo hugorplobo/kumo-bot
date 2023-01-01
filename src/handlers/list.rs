@@ -1,7 +1,7 @@
 use frankenstein::{AsyncApi, Message, SendMessageParams, AsyncTelegramApi, ParseMode, ReplyMarkup};
 use log::error;
 
-use crate::{model::db::Database, utils::{escape_filename, create_inline_keyboard}};
+use crate::{model::db::Database, utils::{escape_markdown, create_inline_keyboard}};
 
 pub async fn handle_list(bot: &AsyncApi, msg: &Message, db: &Database) {
     if let Some(ref user) = msg.from {
@@ -13,7 +13,7 @@ pub async fn handle_list(bot: &AsyncApi, msg: &Message, db: &Database) {
                 let mut text = String::from("💾 Your files");
 
                 for file in files {
-                    text += &format!("\n\n*Name:* {}\n*View:* _in soon_", escape_filename(&file.name));
+                    text += &format!("\n\n*Name:* {}\n*View:* _/id{}_", escape_markdown(&file.name), file.id);
                 }
 
                 text += "\n\nPage: *1*";
