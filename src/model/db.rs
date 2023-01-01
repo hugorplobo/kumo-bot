@@ -3,7 +3,6 @@ use log::error;
 use crate::DbPool;
 
 use super::file::File;
-
 pub struct Database {
     pool: DbPool
 }
@@ -66,12 +65,12 @@ impl Database {
         }
     }
 
-    pub async fn get_all(&self, user_id: &str) -> Result<Vec<File>, ()> {
+    pub async fn get_all(&self, user_id: &str, page: i32) -> Result<Vec<File>, ()> {
         let conn = self.pool.get().await.unwrap();
 
         match conn.query(
-            "select * from file f join file_user fu on f.id = fu.id_file where id_user = $1::TEXT",
-            &[&user_id]
+            "select * from file f join file_user fu on f.id = fu.id_file where id_user = $1::TEXT limit 5 offset $2::INT",
+            &[&user_id, &((page - 1) * 5)]
         ).await {
             Ok(rows) => {
                 let files: Vec<_> = rows.iter().map(|row| {
