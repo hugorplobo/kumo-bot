@@ -1,7 +1,7 @@
 use frankenstein::{CallbackQuery, AsyncApi};
 use log::{error, info};
 
-use crate::{model::db::Database, handlers::back::handle_back};
+use crate::{model::db::Database, handlers::{back::handle_back, delete::handle_delete}};
 
 use super::next::handle_next;
 
@@ -21,6 +21,7 @@ pub async fn parse_query(bot: &AsyncApi, query: &CallbackQuery, db: &Database) {
                 },
                 "delete" => {
                     info!("Delete callback query received");
+                    handle_delete(bot, query, db).await;
                 },
                 _ => {
                     error!("Unknown callback query type");
