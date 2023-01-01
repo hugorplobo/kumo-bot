@@ -16,29 +16,21 @@ impl Database {
         let conn = self.pool.get().await.unwrap();
         
         if let Err(err) = conn.execute(
-            "insert into file values ($1::TEXT, $2::TEXT)",
-            &[&file.id, &file.name]
+            "insert into file(telegram_id, name, user_id) values ($1::TEXT, $2::TEXT, $3::TEXT)",
+            &[&file.telegram_id, &file.name, &user_id]
         ).await {
             error!("Failed to insert file: {err}");
-            return Err(());
-        }
-
-        if let Err(err) = conn.execute(
-            "insert into file_user values ($1::TEXT, $2::TEXT)",
-            &[&user_id, &file.id]
-        ).await {
-            error!("Failed to bind file to user: {err}");
             return Err(());
         }
 
         Ok(())
     }
 
-    pub async fn remove(&self, user_id: &str, file_id: &str) -> Result<(), ()> {
+    pub async fn remove(&self, user_id: &str, file_id: i32) -> Result<(), ()> {
         let conn = self.pool.get().await.unwrap();
 
         if let Err(err) = conn.execute(
-            "delete from file_user where id_user = $1::TEXT and id_file = $2::TEXT",
+            "delete from file where user_id = $1::TEXT and id = $2::INT",
             &[&user_id, &file_id]
         ).await {
             error!("Failed to remove file from user: {err}");
@@ -48,15 +40,17 @@ impl Database {
         Ok(())
     }
 
-    pub async fn get(&self, file_id: &str) -> Result<File, ()> {
+    pub async fn get(&self, id: i32, user_id: &str) -> Result<File, ()> {
         let conn = self.pool.get().await.unwrap();
 
         match conn.query(
-            "select from file where id = $1::TEXT",
-            &[&file_id]
+            "select * from file where id = $1::INT and user_id = $2::TEXT",
+            &[&id, &user_id]
         ).await {
             Ok(rows) => {
-                return Ok(File::new(rows[0].get("id"), rows[0].get("name")));
+                let mut file = File::new(rows[0].get("telegram_id"), rows[0].get("name"));
+                file.id = rows[0].get("id");
+                return Ok(file);
             },
             Err(err) => {
                 error!("Failed to get file: {err}");
@@ -69,12 +63,13 @@ impl Database {
         let conn = self.pool.get().await.unwrap();
 
         match conn.query(
-            "select * from file f join file_user fu on f.id = fu.id_file where id_user = $1::TEXT limit 5 offset $2::INT",
+            "select * from file where user_id = $1::TEXT limit 5 offset $2::INT",
             &[&user_id, &((page - 1) * 5)]
         ).await {
             Ok(rows) => {
                 let files: Vec<_> = rows.iter().map(|row| {
-                    let file = File::new(row.get("id"), row.get("name"));
+                    let mut file = File::new(row.get("telegram_id"), row.get("name"));
+                    file.id = row.get("id");
                     return file;
                 }).collect();
 
