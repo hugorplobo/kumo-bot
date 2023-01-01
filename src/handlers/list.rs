@@ -1,29 +1,37 @@
-use frankenstein::{AsyncApi, Message, SendMessageParams, AsyncTelegramApi, ParseMode};
+use frankenstein::{AsyncApi, Message, SendMessageParams, AsyncTelegramApi, ParseMode, ReplyMarkup};
 use log::error;
 
-use crate::{model::db::Database, utils::escape_filename};
+use crate::{model::db::Database, utils::{escape_filename, create_inline_keyboard}};
 
 pub async fn handle_list(bot: &AsyncApi, msg: &Message, db: &Database) {
     if let Some(ref user) = msg.from {
         let send_message_builder = SendMessageParams::builder()
             .chat_id(msg.chat.id);
 
-        match db.get_all(&user.id.to_string()).await {
+        match db.get_all(&user.id.to_string(), 1).await {
             Ok(files) => {
-                let mut text = format!("💾 You have {} items", files.len());
+                let mut text = String::from("💾 Your files");
 
                 for file in files {
                     text += &format!("\n\n*Name:* {}\n*View:* _in soon_", escape_filename(&file.name));
                 }
 
+                text += "\n\nPage: *1*";
+
+                let keyboard = create_inline_keyboard(vec![
+                    ("Back", "back,1"),
+                    ("Next", "next,1")
+                ]);
+
                 let params = send_message_builder
                     .text(text)
                     .parse_mode(ParseMode::MarkdownV2)
                     .disable_web_page_preview(true)
+                    .reply_markup(ReplyMarkup::InlineKeyboardMarkup(keyboard))
                     .build();
                 
                 if let Err(err) = bot.send_message(&params).await {
-                    error!("Failed to send error message while retrieving files: {err}");
+                    error!("Failed to send files message: {err}");
                 }
             },
             Err(_) => {
