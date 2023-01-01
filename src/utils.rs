@@ -1,9 +1,17 @@
 use frankenstein::{InlineKeyboardButton, InlineKeyboardMarkup};
 
-pub fn escape_filename(name: &str) -> String {
+pub fn escape_markdown(name: &str) -> String {
     let res = String::from(name);
     res.replace(".", "\\.")
         .replace("_", "\\_")
+        .replace("-", "\\-")
+        .replace("~", "\\~")
+        .replace("|", "\\|")
+        .replace("(", "\\(")
+        .replace(")", "\\)")
+        .replace("[", "\\[")
+        .replace("]", "\\]")
+        .replace("`", "\\`")
 }
 
 pub fn create_inline_keyboard(btns: Vec<(&str, &str)>) -> InlineKeyboardMarkup {
