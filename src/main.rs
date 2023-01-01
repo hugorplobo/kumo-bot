@@ -4,7 +4,7 @@ use bb8::Pool;
 use bb8_postgres::{tokio_postgres::{Config, NoTls}, PostgresConnectionManager};
 use dotenvy::dotenv;
 use log::info;
-use frankenstein::{AsyncTelegramApi, AsyncApi, GetUpdatesParams};
+use frankenstein::{AsyncTelegramApi, AsyncApi, GetUpdatesParams, AllowedUpdate};
 
 pub mod model;
 pub mod handlers;
@@ -46,7 +46,8 @@ async fn main() {
         .await
         .unwrap();
 
-    let update_params_builder = GetUpdatesParams::builder();
+    let update_params_builder = GetUpdatesParams::builder()
+        .allowed_updates(vec![AllowedUpdate::Message, AllowedUpdate::CallbackQuery]);
     let mut update_params = update_params_builder.clone().build();
 
     info!("Running");
