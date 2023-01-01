@@ -1,5 +1,8 @@
 pub mod command_handler;
+mod query_handler;
 
-pub mod help;
-pub mod add;
-pub mod list;
+mod help;
+mod add;
+mod list;
+mod back;
+mod next;
