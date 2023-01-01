@@ -1,7 +1,7 @@
 use frankenstein::{AsyncApi, Update, UpdateContent};
 use log::info;
 
-use crate::{handlers::{help::handle_help, add::handle_add, list::handle_list}, DbPool, model::db::Database};
+use crate::{handlers::{help::handle_help, add::handle_add, list::handle_list, query_handler::parse_query}, DbPool, model::db::Database};
 
 pub async fn parse_update(bot: AsyncApi, update: Update, pool: DbPool) {
     let db = Database::new(pool);
@@ -23,8 +23,11 @@ pub async fn parse_update(bot: AsyncApi, update: Update, pool: DbPool) {
                 handle_add(&bot, &msg, &db).await;
             }
         },
+        UpdateContent::CallbackQuery(query) => {
+            parse_query(&bot, &query, &db).await;
+        },
         _ => {
-            info!("Unknown response received");
+            info!("Unknown update received");
         }
     }
 }
