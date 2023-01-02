@@ -12,7 +12,8 @@ pub async fn handle_add(bot: &AsyncApi, msg: &Message, db: &Database) {
         );
 
         let send_message_builder = SendMessageParams::builder()
-            .chat_id(msg.chat.id);
+            .chat_id(msg.chat.id)
+            .reply_to_message_id(msg.message_id);
 
         if let Err(_) = db.add(&user.id.to_string(), &file).await {
             let params = send_message_builder
