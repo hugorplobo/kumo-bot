@@ -1,4 +1,4 @@
-use frankenstein::{AsyncApi, CallbackQuery, EditMessageTextParams, ParseMode, AsyncTelegramApi};
+use frankenstein::{AsyncApi, CallbackQuery, EditMessageTextParams, ParseMode, AsyncTelegramApi, AnswerCallbackQueryParams};
 use log::error;
 
 use crate::{model::db::Database, utils::{escape_markdown, create_inline_keyboard}};
@@ -17,6 +17,19 @@ pub async fn handle_next(bot: &AsyncApi, query: &CallbackQuery, db: &Database) {
     let page = values[1].parse::<i32>().unwrap() + 1;
     
     if let Ok(files) = db.get_all(&user.id.to_string(), page).await {
+        if files.len() < 1 {
+            let params = AnswerCallbackQueryParams::builder()
+                .callback_query_id(&query.id)
+                .cache_time(0u32)
+                .text("This is the last page")
+                .build();
+            
+            if let Err(err) = bot.answer_callback_query(&params).await {
+                error!("Failed to warn last page: {err}");
+            }
+
+            return;
+        }
 
         let mut text = String::from("💾 Your files");
 
