@@ -1,7 +1,9 @@
 use frankenstein::{AsyncApi, Update, UpdateContent};
 use log::info;
 
-use crate::{handlers::{help::handle_help, add::handle_add, list::handle_list, query_handler::parse_query, id::handle_id}, DbPool, model::db::Database};
+use crate::{handlers::{help::handle_help, add::handle_add, list::handle_list, query_handler::parse_callback_query, id::handle_id}, DbPool, model::db::Database};
+
+use super::query_handler::parse_inline_query;
 
 pub async fn parse_update(bot: AsyncApi, update: Update, pool: DbPool) {
     let db = Database::new(pool);
@@ -9,7 +11,7 @@ pub async fn parse_update(bot: AsyncApi, update: Update, pool: DbPool) {
     match update.content {
         UpdateContent::Message(msg) => {
             if let Some(ref text) = msg.text {
-                if text.starts_with("/help") {
+                if text.starts_with("/help") || text.starts_with("/start") {
                     info!("Help message received");
                     handle_help(&bot, &msg).await;
                 } else if text.starts_with("/list") {
@@ -25,7 +27,11 @@ pub async fn parse_update(bot: AsyncApi, update: Update, pool: DbPool) {
             }
         },
         UpdateContent::CallbackQuery(query) => {
-            parse_query(&bot, &query, &db).await;
+            parse_callback_query(&bot, &query, &db).await;
+        },
+        UpdateContent::InlineQuery(query) => {
+            info!("Inline query received");
+            parse_inline_query(&bot, &query, &db).await;
         },
         _ => {
             info!("Unknown update received");
