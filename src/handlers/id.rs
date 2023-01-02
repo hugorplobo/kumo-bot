@@ -1,13 +1,15 @@
 use frankenstein::{AsyncApi, Message, SendDocumentParams, AsyncTelegramApi, ReplyMarkup};
 use log::error;
 
-use crate::{model::db::Database, utils::create_inline_keyboard};
+use crate::{utils::create_inline_keyboard, api::Api};
 
-pub async fn handle_id(bot: &AsyncApi, msg: &Message, db: &Database) {
+pub async fn handle_id(bot: &AsyncApi, msg: &Message) {
     let msg_values: Vec<_> = msg.text.as_ref().unwrap().split("/id").collect();
     let file_id = msg_values[1].parse::<i32>().unwrap();
+
+    let api = Api::new(&msg.from.as_ref().unwrap().id.to_string());
     
-    if let Ok(file) = db.get(file_id, &msg.from.as_ref().unwrap().id.to_string()).await {
+    if let Ok(file) = api.get(file_id).await {
         let keyboard = create_inline_keyboard(vec![
             ("Delete", &format!("delete,{},{}", file_id, msg.chat.as_ref().id))
         ]);

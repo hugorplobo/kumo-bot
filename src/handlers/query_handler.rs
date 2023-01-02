@@ -1,11 +1,11 @@
 use frankenstein::{CallbackQuery, AsyncApi, InlineQuery, AnswerInlineQueryParams, InlineQueryResultCachedDocument, InlineQueryResult, AsyncTelegramApi, InlineQueryResultArticle, InputTextMessageContent};
 use log::{error, info};
 
-use crate::{model::db::Database, handlers::{back::handle_back, delete::handle_delete}};
+use crate::{handlers::{back::handle_back, delete::handle_delete}, api::Api};
 
 use super::next::handle_next;
 
-pub async fn parse_callback_query(bot: &AsyncApi, query: &CallbackQuery, db: &Database) {
+pub async fn parse_callback_query(bot: &AsyncApi, query: &CallbackQuery) {
     if let Some(_) = query.message {
         if let Some(ref data) = query.data {
             let values: Vec<_> = data.split(",").collect();
@@ -13,15 +13,15 @@ pub async fn parse_callback_query(bot: &AsyncApi, query: &CallbackQuery, db: &Da
             match values[0] {
                 "back" => {
                     info!("Back callback query received");
-                    handle_back(bot, query, db).await;
+                    handle_back(bot, query).await;
                 },
                 "next" => {
                     info!("Next callback query received");
-                    handle_next(bot, query, db).await;
+                    handle_next(bot, query).await;
                 },
                 "delete" => {
                     info!("Delete callback query received");
-                    handle_delete(bot, query, db).await;
+                    handle_delete(bot, query).await;
                 },
                 _ => {
                     error!("Unknown callback query type");
@@ -31,10 +31,11 @@ pub async fn parse_callback_query(bot: &AsyncApi, query: &CallbackQuery, db: &Da
     }
 }
 
-pub async fn parse_inline_query(bot: &AsyncApi, query: &InlineQuery, db: &Database) {
+pub async fn parse_inline_query(bot: &AsyncApi, query: &InlineQuery) {
     let user_id = query.from.id.to_string();
+    let api = Api::new(&user_id);
 
-    if let Ok(files) = db.search(&user_id, &query.query).await {
+    if let Ok(files) = api.search(&query.query).await {
         let mut results: Vec<InlineQueryResult> = files.iter().map(|file| {
             let result = InlineQueryResult::CachedDocument(
                 InlineQueryResultCachedDocument::builder()

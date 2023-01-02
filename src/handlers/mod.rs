@@ -7,7 +7,7 @@ mod help;
 mod add;
 mod list;
 mod id;
-
+mod web;
 // Callback queries
 mod back;
 mod next;

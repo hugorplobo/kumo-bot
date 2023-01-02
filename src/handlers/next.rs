@@ -1,9 +1,9 @@
 use frankenstein::{AsyncApi, CallbackQuery, EditMessageTextParams, ParseMode, AsyncTelegramApi, AnswerCallbackQueryParams};
 use log::error;
 
-use crate::{model::db::Database, utils::{escape_markdown, create_inline_keyboard}};
+use crate::{utils::{escape_markdown, create_inline_keyboard}, api::Api};
 
-pub async fn handle_next(bot: &AsyncApi, query: &CallbackQuery, db: &Database) {
+pub async fn handle_next(bot: &AsyncApi, query: &CallbackQuery) {
     let msg = query.message.as_ref().unwrap();
     let user = &query.from;
     let values: Vec<_> = query.data.as_ref().unwrap().split(",").collect();
@@ -15,8 +15,9 @@ pub async fn handle_next(bot: &AsyncApi, query: &CallbackQuery, db: &Database) {
         .disable_web_page_preview(true);
         
     let page = values[1].parse::<i32>().unwrap() + 1;
+    let api = Api::new(&user.id.to_string());
     
-    if let Ok(files) = db.get_all(&user.id.to_string(), page).await {
+    if let Ok(files) = api.get_all(page).await {
         if files.len() < 1 {
             let params = AnswerCallbackQueryParams::builder()
                 .callback_query_id(&query.id)

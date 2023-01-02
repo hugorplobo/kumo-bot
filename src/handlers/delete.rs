@@ -1,9 +1,9 @@
 use frankenstein::{AsyncApi, CallbackQuery, AsyncTelegramApi, AnswerCallbackQueryParams, DeleteMessageParams};
 use log::error;
 
-use crate::model::db::Database;
+use crate::api::Api;
 
-pub async fn handle_delete(bot: &AsyncApi, query: &CallbackQuery, db: &Database) {
+pub async fn handle_delete(bot: &AsyncApi, query: &CallbackQuery) {
     let values: Vec<_> = query.data.as_ref().unwrap().split(",").collect();
     let file_id = values[1].parse::<i32>().unwrap();
     let chat_id = values[2].parse::<i64>().unwrap();
@@ -11,8 +11,10 @@ pub async fn handle_delete(bot: &AsyncApi, query: &CallbackQuery, db: &Database)
 
     let params = AnswerCallbackQueryParams::builder()
         .callback_query_id(query.id.clone());
+    
+    let api = Api::new(&user_id);
 
-    if let Err(_) = db.remove(&user_id, file_id).await {
+    if let Err(_) = api.remove(file_id).await {
         let params = params
             .text("Failed do delete the file :(")
             .build();

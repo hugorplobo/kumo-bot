@@ -1,14 +1,16 @@
 use frankenstein::{AsyncApi, Message, SendMessageParams, AsyncTelegramApi, ParseMode, ReplyMarkup};
 use log::error;
 
-use crate::{model::db::Database, utils::{escape_markdown, create_inline_keyboard}};
+use crate::{utils::{escape_markdown, create_inline_keyboard}, api::Api};
 
-pub async fn handle_list(bot: &AsyncApi, msg: &Message, db: &Database) {
+pub async fn handle_list(bot: &AsyncApi, msg: &Message) {
     if let Some(ref user) = msg.from {
         let send_message_builder = SendMessageParams::builder()
             .chat_id(msg.chat.id);
+        
+        let api = Api::new(&user.id.to_string());
 
-        match db.get_all(&user.id.to_string(), 1).await {
+        match api.get_all(1).await {
             Ok(files) => {
                 let mut text = String::from("💾 Your files");
 
