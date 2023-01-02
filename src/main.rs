@@ -47,7 +47,12 @@ async fn main() {
         .unwrap();
 
     let update_params_builder = GetUpdatesParams::builder()
-        .allowed_updates(vec![AllowedUpdate::Message, AllowedUpdate::CallbackQuery]);
+        .allowed_updates(vec![
+            AllowedUpdate::Message,
+            AllowedUpdate::CallbackQuery,
+            AllowedUpdate::InlineQuery,
+        ]);
+
     let mut update_params = update_params_builder.clone().build();
 
     info!("Running");
