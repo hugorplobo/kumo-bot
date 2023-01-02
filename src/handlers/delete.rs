@@ -10,8 +10,7 @@ pub async fn handle_delete(bot: &AsyncApi, query: &CallbackQuery, db: &Database)
     let user_id = query.from.id.to_string();
 
     let params = AnswerCallbackQueryParams::builder()
-        .callback_query_id(query.id.clone())
-        .show_alert(true);
+        .callback_query_id(query.id.clone());
 
     if let Err(_) = db.remove(&user_id, file_id).await {
         let params = params
