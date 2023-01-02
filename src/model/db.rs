@@ -63,8 +63,31 @@ impl Database {
         let conn = self.pool.get().await.unwrap();
 
         match conn.query(
-            "select * from file where user_id = $1::TEXT limit 5 offset $2::INT",
+            "select * from file where user_id = $1::TEXT order by id desc limit 5 offset $2::INT",
             &[&user_id, &((page - 1) * 5)]
+        ).await {
+            Ok(rows) => {
+                let files: Vec<_> = rows.iter().map(|row| {
+                    let mut file = File::new(row.get("telegram_id"), row.get("name"));
+                    file.id = row.get("id");
+                    return file;
+                }).collect();
+
+                return Ok(files);
+            },
+            Err(err) => {
+                error!("Failed to get files: {err}");
+                return Err(());
+            }
+        }
+    }
+
+    pub async fn search(&self, user_id: &str, search: &str) -> Result<Vec<File>, ()> {
+        let conn = self.pool.get().await.unwrap();
+
+        match conn.query(
+            "select * from file where user_id = $1::TEXT and name like $2::TEXT order by id desc limit 50",
+            &[&user_id, &format!("%{search}%")]
         ).await {
             Ok(rows) => {
                 let files: Vec<_> = rows.iter().map(|row| {
