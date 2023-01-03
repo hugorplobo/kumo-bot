@@ -32,6 +32,9 @@ The _/list_ command will give you a command like \"/id123\" for each file, click
 🌎 *Access in other chats*:
 Type @kumoo\\_bot in any chat to access your files
 
+🌐 *Easy visualization\\!* _\\(Experimental\\)_
+Use _/web_ to open a nice visualization of your files with search feature integrated
+
 _You can report any problem to @hugorplobo\\!_"
         )
         .parse_mode(ParseMode::MarkdownV2)

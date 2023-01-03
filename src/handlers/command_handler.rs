@@ -3,7 +3,7 @@ use log::info;
 
 use crate::handlers::{help::handle_help, add::handle_add, list::handle_list, query_handler::parse_callback_query, id::handle_id};
 
-use super::query_handler::parse_inline_query;
+use super::{query_handler::parse_inline_query, web::handle_web};
 
 pub async fn parse_update(bot: AsyncApi, update: Update) {
     match update.content {
@@ -18,6 +18,8 @@ pub async fn parse_update(bot: AsyncApi, update: Update) {
                 } else if text.starts_with("/id") {
                     info!("Id message received");
                     handle_id(&bot, &msg).await;
+                } else if text.starts_with("/web") {
+                    handle_web(&bot, &msg).await;
                 }
             } else if let Some(_) = msg.document {
                 info!("Document received");
