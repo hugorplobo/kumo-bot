@@ -102,7 +102,7 @@ impl Api {
 
     pub async fn get_all(&self, page: i32) -> Result<Vec<File>, ()> {
         let url = format!(
-            "{}/get_all?user_id={}&page={}",
+            "{}/get_all?user_id={}&page={}&qtd=5",
             self.base_url,
             self.user_id,
             page
